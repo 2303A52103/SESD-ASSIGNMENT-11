@@ -1,0 +1,832 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Movie Recommendation App</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        :root {
+            --primary: #e50914;
+            --secondary: #ffd700;
+            --dark: #0c0c0c;
+            --dark-gray: #1a1a1a;
+            --medium-gray: #2a2a2a;
+            --light-gray: #e0e0e0;
+            --text: #ffffff;
+        }
+
+        body {
+            background: linear-gradient(135deg, var(--dark), var(--dark-gray));
+            min-height: 100vh;
+            color: var(--text);
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 0;
+            margin-bottom: 30px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .logo i {
+            color: var(--primary);
+            font-size: 2rem;
+        }
+
+        .logo h1 {
+            font-size: 2.2rem;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-weight: 700;
+        }
+
+        .search-container {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 40px;
+            background: var(--medium-gray);
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .search-box {
+            flex: 1;
+            position: relative;
+        }
+
+        #searchInput {
+            width: 100%;
+            padding: 15px 20px 15px 50px;
+            background: var(--dark-gray);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            border-radius: 50px;
+            font-size: 16px;
+            outline: none;
+            transition: all 0.3s ease;
+            color: var(--text);
+        }
+
+        #searchInput:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(229, 9, 20, 0.2);
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--light-gray);
+        }
+
+        #searchBtn {
+            padding: 15px 30px;
+            background: linear-gradient(135deg, var(--primary), #ff4d4d);
+            color: white;
+            border: none;
+            border-radius: 50px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        #searchBtn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(229, 9, 20, 0.4);
+        }
+
+        .app-content {
+            display: grid;
+            grid-template-columns: 1fr 350px;
+            gap: 30px;
+        }
+
+        .main-content {
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+        }
+
+        .section-title {
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+            color: var(--secondary);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .movie-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 25px;
+        }
+
+        .movie-card {
+            background: var(--medium-gray);
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            cursor: pointer;
+        }
+
+        .movie-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(229, 9, 20, 0.2);
+        }
+
+        .movie-poster {
+            width: 100%;
+            height: 350px;
+            object-fit: cover;
+            border-bottom: 3px solid var(--primary);
+        }
+
+        .movie-info {
+            padding: 20px;
+        }
+
+        .movie-title {
+            font-size: 1.2rem;
+            font-weight: bold;
+            margin-bottom: 8px;
+            color: var(--text);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .movie-meta {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 12px;
+            font-size: 0.9rem;
+            color: var(--light-gray);
+        }
+
+        .movie-rating {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            color: var(--secondary);
+            font-weight: bold;
+        }
+
+        .movie-genre {
+            color: #aaa;
+            font-size: 0.9rem;
+            margin-bottom: 15px;
+        }
+
+        .movie-plot {
+            color: var(--light-gray);
+            font-size: 0.9rem;
+            line-height: 1.5;
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .sidebar {
+            background: var(--medium-gray);
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            height: fit-content;
+        }
+
+        .featured-movie {
+            margin-bottom: 30px;
+        }
+
+        .featured-poster {
+            width: 100%;
+            border-radius: 10px;
+            margin-bottom: 15px;
+        }
+
+        .featured-title {
+            font-size: 1.3rem;
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: var(--text);
+        }
+
+        .featured-rating {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            margin-bottom: 15px;
+            color: var(--secondary);
+            font-weight: bold;
+        }
+
+        .trending-list {
+            list-style: none;
+        }
+
+        .trending-item {
+            display: flex;
+            gap: 15px;
+            padding: 15px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .trending-item:last-child {
+            border-bottom: none;
+        }
+
+        .trending-poster {
+            width: 60px;
+            height: 80px;
+            object-fit: cover;
+            border-radius: 5px;
+        }
+
+        .trending-info {
+            flex: 1;
+        }
+
+        .trending-title {
+            font-weight: bold;
+            margin-bottom: 5px;
+            font-size: 0.95rem;
+        }
+
+        .trending-year {
+            color: #aaa;
+            font-size: 0.85rem;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #aaa;
+        }
+
+        .spinner {
+            border: 4px solid rgba(255, 255, 255, 0.1);
+            border-top: 4px solid var(--primary);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .error {
+            background: rgba(220, 53, 69, 0.2);
+            color: #ff6b6b;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            margin: 20px 0;
+            border: 1px solid rgba(220, 53, 69, 0.3);
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .initial-message {
+            text-align: center;
+            padding: 60px 20px;
+            color: #aaa;
+            font-size: 1.1rem;
+            grid-column: 1 / -1;
+        }
+
+        footer {
+            text-align: center;
+            color: #aaa;
+            padding: 30px 20px;
+            margin-top: 60px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .footer-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .api-status {
+            display: inline-block;
+            background: #27ae60;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 0.8rem;
+            margin-left: 10px;
+        }
+
+        .view-toggle {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .view-btn {
+            padding: 8px 15px;
+            background: var(--dark-gray);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 5px;
+            color: var(--text);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .view-btn.active {
+            background: var(--primary);
+        }
+
+        @media (max-width: 1100px) {
+            .app-content {
+                grid-template-columns: 1fr;
+            }
+            
+            .sidebar {
+                display: none;
+            }
+        }
+
+        @media (max-width: 768px) {
+            header {
+                flex-direction: column;
+                gap: 15px;
+                text-align: center;
+            }
+            
+            .search-container {
+                flex-direction: column;
+            }
+            
+            .movie-grid {
+                grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            }
+            
+            .footer-content {
+                flex-direction: column;
+                gap: 15px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .movie-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .container {
+                padding: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="logo">
+                <i class="fas fa-film"></i>
+                <h1>Movie Recommendation App</h1>
+            </div>
+            <div class="tagline">
+                <p>Discover your next favorite movie</p>
+            </div>
+        </header>
+
+        <div class="search-container">
+            <div class="search-box">
+                <i class="fas fa-search search-icon"></i>
+                <input type="text" id="searchInput" placeholder="Search for a movie...">
+            </div>
+            <button id="searchBtn">
+                <i class="fas fa-search"></i> Search
+            </button>
+        </div>
+
+        <div id="loading" class="loading hidden">
+            <div class="spinner"></div>
+            <p>Searching our movie database...</p>
+        </div>
+
+        <div id="error" class="error hidden"></div>
+
+        <div class="app-content">
+            <div class="main-content">
+                <div id="initialMessage" class="initial-message">
+                    <i class="fas fa-film" style="font-size: 3rem; margin-bottom: 20px; opacity: 0.5;"></i>
+                    <h2>Welcome to Movie Recommendation App</h2>
+                    <p>Search for any movie to get details and personalized recommendations</p>
+                </div>
+
+                <div id="searchResults" class="hidden">
+                    <div class="section-header">
+                        <h2 class="section-title">
+                            <i class="fas fa-search"></i> Search Results
+                        </h2>
+                        <div class="view-toggle">
+                            <button class="view-btn active" data-view="grid">
+                                <i class="fas fa-th"></i> Grid
+                            </button>
+                            <button class="view-btn" data-view="list">
+                                <i class="fas fa-list"></i> List
+                            </button>
+                        </div>
+                    </div>
+                    <div id="movieGrid" class="movie-grid">
+                        <!-- Movie cards will be displayed here -->
+                    </div>
+                </div>
+
+                <div id="recommendations" class="hidden">
+                    <h2 class="section-title">
+                        <i class="fas fa-star"></i> Recommended For You
+                    </h2>
+                    <div id="recommendationGrid" class="movie-grid">
+                        <!-- Recommendations will be displayed here -->
+                    </div>
+                </div>
+            </div>
+
+            <div class="sidebar">
+                <div class="featured-movie">
+                    <h3 class="section-title">
+                        <i class="fas fa-fire"></i> Featured Movie
+                    </h3>
+                    <img src="https://via.placeholder.com/300x450/333333/ffffff?text=Featured+Movie" alt="Featured Movie" class="featured-poster">
+                    <div class="featured-title">The Dark Knight</div>
+                    <div class="featured-rating">
+                        <i class="fas fa-star"></i> 9.0/10
+                    </div>
+                    <p>When the menace known as the Joker wreaks havoc and chaos on the people of Gotham, Batman must accept one of the greatest psychological and physical tests of his ability to fight injustice.</p>
+                </div>
+
+                <div class="trending">
+                    <h3 class="section-title">
+                        <i class="fas fa-chart-line"></i> Trending Now
+                    </h3>
+                    <ul class="trending-list">
+                        <li class="trending-item">
+                            <img src="https://via.placeholder.com/60x80/333333/ffffff?text=Movie1" alt="Movie 1" class="trending-poster">
+                            <div class="trending-info">
+                                <div class="trending-title">Inception</div>
+                                <div class="trending-year">2010 • Sci-Fi</div>
+                            </div>
+                        </li>
+                        <li class="trending-item">
+                            <img src="https://via.placeholder.com/60x80/333333/ffffff?text=Movie2" alt="Movie 2" class="trending-poster">
+                            <div class="trending-info">
+                                <div class="trending-title">Parasite</div>
+                                <div class="trending-year">2019 • Thriller</div>
+                            </div>
+                        </li>
+                        <li class="trending-item">
+                            <img src="https://via.placeholder.com/60x80/333333/ffffff?text=Movie3" alt="Movie 3" class="trending-poster">
+                            <div class="trending-info">
+                                <div class="trending-title">The Shawshank Redemption</div>
+                                <div class="trending-year">1994 • Drama</div>
+                            </div>
+                        </li>
+                        <li class="trending-item">
+                            <img src="https://via.placeholder.com/60x80/333333/ffffff?text=Movie4" alt="Movie 4" class="trending-poster">
+                            <div class="trending-info">
+                                <div class="trending-title">Pulp Fiction</div>
+                                <div class="trending-year">1994 • Crime</div>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <footer>
+            <div class="footer-content">
+                <div class="footer-info">
+                    <p>Created by <strong>R . Anirudh</strong> | Powered by OMDb API <span class="api-status">API: ACTIVE</span></p>
+                    <p style="margin-top: 10px; font-size: 0.9rem;">Enrollment No: 2303A52103 | Batch: 33 | Date: 07/11/25</p>
+                </div>
+                <div class="social-links">
+                    <i class="fab fa-github"></i>
+                    <i class="fab fa-linkedin"></i>
+                    <i class="fab fa-twitter"></i>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <script>
+        // OMDb API Configuration
+        const API_KEY = 'a29b2451';
+        const BASE_URL = 'https://www.omdbapi.com/';
+
+        // DOM Elements
+        const searchInput = document.getElementById('searchInput');
+        const searchBtn = document.getElementById('searchBtn');
+        const searchResults = document.getElementById('searchResults');
+        const movieGrid = document.getElementById('movieGrid');
+        const recommendations = document.getElementById('recommendations');
+        const recommendationGrid = document.getElementById('recommendationGrid');
+        const loading = document.getElementById('loading');
+        const error = document.getElementById('error');
+        const initialMessage = document.getElementById('initialMessage');
+
+        // Initialize the application
+        document.addEventListener('DOMContentLoaded', function() {
+            searchBtn.addEventListener('click', searchMovies);
+            searchInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    searchMovies();
+                }
+            });
+
+            // Set placeholder suggestions
+            const suggestions = ['The Dark Knight', 'Inception', 'Parasite', 'Interstellar', 'The Godfather'];
+            let currentSuggestion = 0;
+            
+            setInterval(() => {
+                searchInput.placeholder = `Try "${suggestions[currentSuggestion]}"...`;
+                currentSuggestion = (currentSuggestion + 1) % suggestions.length;
+            }, 3000);
+
+            // View toggle functionality
+            const viewButtons = document.querySelectorAll('.view-btn');
+            viewButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    viewButtons.forEach(btn => btn.classList.remove('active'));
+                    this.classList.add('active');
+                    // In a real app, we would change the view here
+                });
+            });
+        });
+
+        async function searchMovies() {
+            const query = searchInput.value.trim();
+            if (!query) {
+                showError('Please enter a movie title to search.');
+                return;
+            }
+
+            showLoading();
+            hideError();
+            hideInitialMessage();
+            clearResults();
+
+            try {
+                // Search for movies
+                const searchResponse = await fetch(`${BASE_URL}?apikey=${API_KEY}&s=${encodeURIComponent(query)}&type=movie`);
+                
+                if (!searchResponse.ok) {
+                    throw new Error('Network response was not ok');
+                }
+
+                const searchData = await searchResponse.json();
+                
+                if (searchData.Response === 'False') {
+                    throw new Error(searchData.Error || 'No movies found');
+                }
+
+                // Get details for all movies
+                if (searchData.Search && searchData.Search.length > 0) {
+                    const moviePromises = searchData.Search.slice(0, 6).map(movie => 
+                        fetchMovieDetails(movie.imdbID)
+                    );
+
+                    const movieDetails = await Promise.all(moviePromises);
+                    const validMovies = movieDetails.filter(movie => movie !== null);
+                    
+                    if (validMovies.length > 0) {
+                        displayMovies(validMovies);
+                        await getRecommendations(validMovies[0]);
+                    }
+                }
+            } catch (err) {
+                showError(err.message || 'Failed to fetch movies. Please try again.');
+            } finally {
+                hideLoading();
+            }
+        }
+
+        async function fetchMovieDetails(imdbID) {
+            try {
+                const response = await fetch(`${BASE_URL}?apikey=${API_KEY}&i=${imdbID}&plot=short`);
+                
+                if (!response.ok) {
+                    return null;
+                }
+
+                const data = await response.json();
+                return data.Response === 'True' ? data : null;
+            } catch (error) {
+                console.error('Error fetching movie details:', error);
+                return null;
+            }
+        }
+
+        function displayMovies(movies) {
+            const moviesHTML = movies.map(movie => {
+                const posterSrc = movie.Poster !== 'N/A' ? movie.Poster : 'https://via.placeholder.com/300x450/333333/ffffff?text=No+Poster';
+                const rating = movie.imdbRating !== 'N/A' ? movie.imdbRating : 'N/A';
+                const plot = movie.Plot && movie.Plot !== 'N/A' ? movie.Plot : 'No plot summary available.';
+                const genre = movie.Genre ? movie.Genre.split(',')[0] : 'N/A';
+
+                return `
+                    <div class="movie-card" data-id="${movie.imdbID}">
+                        <img src="${posterSrc}" alt="${movie.Title}" class="movie-poster"
+                             onerror="this.src='https://via.placeholder.com/300x450/333333/ffffff?text=No+Poster'">
+                        <div class="movie-info">
+                            <div class="movie-title">${movie.Title}</div>
+                            <div class="movie-meta">
+                                <span class="movie-year">${movie.Year}</span>
+                                <span class="movie-rating">
+                                    <i class="fas fa-star"></i> ${rating}
+                                </span>
+                            </div>
+                            <div class="movie-genre">${genre}</div>
+                            <div class="movie-plot">${plot}</div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            movieGrid.innerHTML = moviesHTML;
+            searchResults.classList.remove('hidden');
+            
+            // Add click event to movie cards
+            document.querySelectorAll('.movie-card').forEach(card => {
+                card.addEventListener('click', function() {
+                    const movieId = this.getAttribute('data-id');
+                    // In a real app, we would show more details about the movie
+                    console.log('Clicked movie ID:', movieId);
+                });
+            });
+        }
+
+        async function getRecommendations(mainMovie) {
+            if (!mainMovie.Genre) {
+                recommendations.classList.add('hidden');
+                return;
+            }
+
+            try {
+                // Extract main genre from the movie
+                const mainGenre = mainMovie.Genre.split(',')[0].trim();
+                
+                // Search for movies in the same genre
+                const response = await fetch(`${BASE_URL}?apikey=${API_KEY}&s=${encodeURIComponent(mainGenre)}&type=movie`);
+                
+                if (!response.ok) {
+                    throw new Error('Failed to fetch recommendations');
+                }
+
+                const data = await response.json();
+                
+                if (data.Response === 'False') {
+                    recommendations.classList.add('hidden');
+                    return;
+                }
+
+                // Get details for recommended movies (limit to 6)
+                const recommendedMovies = [];
+                const moviePromises = data.Search.slice(0, 6).map(movie => 
+                    fetchMovieDetails(movie.imdbID)
+                );
+
+                const movieDetails = await Promise.all(moviePromises);
+                
+                movieDetails.forEach(movie => {
+                    if (movie && movie.imdbID !== mainMovie.imdbID) {
+                        recommendedMovies.push(movie);
+                    }
+                });
+
+                displayRecommendations(recommendedMovies);
+            } catch (error) {
+                console.error('Error getting recommendations:', error);
+                recommendations.classList.add('hidden');
+            }
+        }
+
+        function displayRecommendations(movies) {
+            if (movies.length === 0) {
+                recommendations.classList.add('hidden');
+                return;
+            }
+
+            const recommendationsHTML = movies.map(movie => {
+                const posterSrc = movie.Poster !== 'N/A' ? movie.Poster : 'https://via.placeholder.com/300x450/333333/ffffff?text=No+Poster';
+                const rating = movie.imdbRating !== 'N/A' ? movie.imdbRating : 'N/A';
+                const genre = movie.Genre ? movie.Genre.split(',')[0] : 'N/A';
+                const plot = movie.Plot && movie.Plot !== 'N/A' ? 
+                    (movie.Plot.length > 100 ? movie.Plot.substring(0, 100) + '...' : movie.Plot) : 
+                    'No plot summary available.';
+
+                return `
+                    <div class="movie-card" data-id="${movie.imdbID}">
+                        <img src="${posterSrc}" alt="${movie.Title}" class="movie-poster"
+                             onerror="this.src='https://via.placeholder.com/300x450/333333/ffffff?text=No+Poster'">
+                        <div class="movie-info">
+                            <div class="movie-title">${movie.Title}</div>
+                            <div class="movie-meta">
+                                <span class="movie-year">${movie.Year}</span>
+                                <span class="movie-rating">
+                                    <i class="fas fa-star"></i> ${rating}
+                                </span>
+                            </div>
+                            <div class="movie-genre">${genre}</div>
+                            <div class="movie-plot">${plot}</div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            recommendationGrid.innerHTML = recommendationsHTML;
+            recommendations.classList.remove('hidden');
+        }
+
+        function showLoading() {
+            loading.classList.remove('hidden');
+        }
+
+        function hideLoading() {
+            loading.classList.add('hidden');
+        }
+
+        function showError(message) {
+            error.textContent = message;
+            error.classList.remove('hidden');
+        }
+
+        function hideError() {
+            error.classList.add('hidden');
+        }
+
+        function hideInitialMessage() {
+            initialMessage.classList.add('hidden');
+        }
+
+        function clearResults() {
+            movieGrid.innerHTML = '';
+            recommendationGrid.innerHTML = '';
+            searchResults.classList.add('hidden');
+            recommendations.classList.add('hidden');
+        }
+
+        // Test API connection on load
+        async function testAPI() {
+            try {
+                const response = await fetch(`${BASE_URL}?apikey=${API_KEY}&s=test&type=movie`);
+                const data = await response.json();
+                
+                if (data.Response === "True" || data.Response === "False") {
+                    console.log("API connection successful");
+                }
+            } catch (error) {
+                console.error("API connection failed:", error);
+                document.querySelector('.api-status').textContent = 'API: INACTIVE';
+                document.querySelector('.api-status').style.background = '#e74c3c';
+            }
+        }
+
+        // Initialize API test
+        testAPI();
+    </script>
+</body>
+</html>
